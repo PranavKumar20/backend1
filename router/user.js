@@ -33,14 +33,7 @@ router.post("/signup", async (req, res) => {
 
 
 router.post("/signin", async (req, res) => {
-  const { success } = signinBody.safeParse(req.body);
-
-  if (!success) {
-    return res.status(403).json({
-      mgs: "Incorrect Inputs",
-    });
-  }
-
+  
   const user = await Users.findOne({
     email: req.body.email,
     password: req.body.password,
