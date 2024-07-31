@@ -7,13 +7,9 @@ const { authMiddleware } = require("../middleware");
 const router = express.Router();
 
 router.post("/signup", async (req, res) => {
-  const existingUser = await Users.findOne({
-    email: req.body.email,
-  });
+  const existingUser = await Users.findOne({ email: req.body.email });
   if (existingUser) {
-    return res.status(411).json({
-      msg: "Credentails already taken",
-    });
+    return res.status(411).json({ msg: "Credentials already taken" });
   }
   const user = await Users.create({
     email: req.body.email,
@@ -31,38 +27,26 @@ router.post("/signup", async (req, res) => {
   });
 });
 
-
 router.post("/signin", async (req, res) => {
-  
   const user = await Users.findOne({
     email: req.body.email,
     password: req.body.password,
   });
 
   if (user) {
-    const token = jwt.sign(
-      {
-        userId: user._id,
-      },
-      JWT_SECRET
-    );
-
+    const token = jwt.sign({ userId: user._id }, JWT_SECRET);
     return res.status(200).json({
-      msg: "login succesful",
+      msg: "Login successful",
       token: token,
       userId: user._id,
     });
   }
-  res.status(411).json({
-    msg: "error while loggging in",
-  });
+  res.status(411).json({ msg: "Error while logging in" });
 });
 
 router.get("/getprofile", authMiddleware, async (req, res) => {
   try {
-    const user = await Users.findOne({
-      _id: req.userId,
-    });
+    const user = await Users.findOne({ _id: req.userId });
     if (!user) {
       return res.status(404).json({ msg: "Profile not found" });
     }
@@ -77,21 +61,21 @@ router.get("/getprofile", authMiddleware, async (req, res) => {
 });
 
 router.get("/mytodos", authMiddleware, async (req, res) => {
-  const myTodos = await Todos.FindById(req.userId);
-  if (!myTodos)
-    return res.status(404).json({
-      msg: "Not able to fetch your todos right now",
-    });
-  res.json({
-      myTodos,
-  });
+  try {
+    const myTodos = await Todos.find({ userId: req.userId });
+    if (!myTodos) {
+      return res.status(404).json({ msg: "Not able to fetch your todos right now" });
+    }
+    res.json({ myTodos });
+  } catch (error) {
+    console.error("Error fetching todos:", error);
+    res.status(500).json({ msg: "Internal server error" });
+  }
 });
 
 router.get("/userdetails", async (req, res) => {
   try {
-    const user = await Users.findOne({
-      _id: req.body.userId,
-    });
+    const user = await Users.findOne({ _id: req.body.userId });
     if (!user) {
       return res.status(404).json({ msg: "Profile not found" });
     }
