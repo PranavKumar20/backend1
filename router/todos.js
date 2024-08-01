@@ -72,28 +72,28 @@ router.get("/alltodos", async (req, res) => {
   }
 });
 
-router.delete(
-  "/deletetodo/:todoid",
-  authMiddleware,
-  async (req, res) => {
-    const todoId = req.params.todoid;
-    try {
-      const existingtodo = await Todos.findOne({
-        _id: todoId,
-        userId: req.userId,
-      });
-      if (!existingtodo)
-        return res
-          .status(403)
-          .json({ msg: "Todo you want to delete not found" });
-      await existingtodo.remove();
-      res.json({ msg: "Todo deleted Successfully" });
-    } catch (error) {
-      console.log(error);
-      res.status(411).josn({ msg: "Something went wrong" });
-    }
+router.delete("/deletetodo/:todoid", authMiddleware, async (req, res) => {
+  const todoId = req.params.todoid;
+  try {
+    const existingtodo = await Todos.findOne({
+      _id: todoId,
+      userId: req.userId,
+    });
+
+    if (!existingtodo)
+      return res
+        .status(403)
+        .json({ msg: "Todo you want to delete not found" });
+
+    await Todos.deleteOne({ _id: todoId, userId: req.userId });
+
+    res.json({ msg: "Todo deleted successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(411).json({ msg: "Something went wrong" });
   }
-);
+});
+
 router.get("/gettodobyid/:todoid", async (req, res) => {
   try {
     const todoId = req.params.todoid;
